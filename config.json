@@ -1,0 +1,13 @@
+{
+    "token": "",
+    "prefix": "!",
+    "mongooseConnectionString": "",
+    "server": {
+        "apiurl": "https://api.leeuwz.nl/",
+        "logourl": "https://i.imgur.com/iNsmXig.png",
+        "domainurl": "https://web.leeuwz.nl/",
+        "avatarurl": "https://a.leeuwz.nl/",
+        "servername": "Leeuwz"
+    },
+    "apikey": ""
+}

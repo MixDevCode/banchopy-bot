@@ -70,6 +70,7 @@ module.exports = {
                         mods: modReplace(bestInfo.scores[i].mods)
                     }
                 });
+                bestInfo.scores[i].id = i+1;
                 if (i % 5 == 0 && i != 0) {
                     await msg.edit(`\`${Number((i/bestInfo.scores.length)*100).toFixed(0)}% Completed...\` **(This may take a while)**`);
                     data.push(description);
@@ -116,6 +117,7 @@ module.exports = {
             const parameters = checkParameter(args, "-r");
             const randomparameters = checkParameter(args, "-rand");
             const indexparameters = checkParameter(args, "-i");
+            const searchparameters = checkParameter(args, "-?");
             if (parameters.contains == true && parameters.hasUser == true) {
                 let username = checkParameter(args, "-r").args;
                 const { data: playerInfo } = await osuApi().get('get_player_info', {
@@ -138,7 +140,7 @@ module.exports = {
                 
                     if (!bestInfo.scores.length || bestInfo.scores.length == 0) return message.reply("Could not find best plays. Maybe the user doesn't have any best play...");
                 for(let i = 0; i < bestInfo.scores.length; i++) {
-                    bestInfo.scores[i].id = i;
+                    bestInfo.scores[i].id = i+1;
                 }
                 bestInfo.scores.sort(function(a, b){return new Date(b.play_time) - new Date(a.play_time)});
 
@@ -211,7 +213,7 @@ module.exports = {
 
                     if (!bestInfo.scores.length || bestInfo.scores.length == 0) return message.reply("Could not find best plays. Maybe you don't have any best play...");
                     for(let i = 0; i < bestInfo.scores.length; i++) {
-                        bestInfo.scores[i].id = i;
+                        bestInfo.scores[i].id = i+1;
                     }
                     bestInfo.scores.sort(function(a, b){return new Date(b.play_time) - new Date(a.play_time)});
                     let description = "";
@@ -281,7 +283,7 @@ module.exports = {
                 const { data: modsFixed } = await banchoApi().get('get_beatmaps', {
                     params: {
                         k: botConfig.apikey,
-                        b: bestInfo.scores[0].beatmap.id,
+                        b: bestInfo.scores[randnum].beatmap.id,
                         mods: modReplace(bestInfo.scores[randnum].mods)
                     }
                     }).catch(err => console.log(err));
@@ -337,7 +339,7 @@ module.exports = {
                 const { data: modsFixed } = await banchoApi().get('get_beatmaps', {
                     params: {
                         k: botConfig.apikey,
-                        b: bestInfo.scores[0].beatmap.id,
+                        b: bestInfo.scores[randnum].beatmap.id,
                         mods: modReplace(bestInfo.scores[randnum].mods)
                     }
                     }).catch(err => console.log(err));
@@ -474,7 +476,197 @@ module.exports = {
                 return message.reply({embeds: [embed]});
 
 
+            } else if (searchparameters.contains == true && searchparameters.hasUser == true) {
+                let username = searchparameters.args;
+                const { data: playerInfo } = await osuApi().get('get_player_info', {
+                    params: {
+                        name: username,
+                        scope: 'all'
+                    }
+                    }).catch(err => message.reply(`Could not find user \`${username}\`, check your spelling.`));
+                    
+                    if(playerInfo == undefined || playerInfo.length == 0) return;
+                
+                var { data: bestInfo } = await osuApi().get('get_player_scores', {
+                    params: {
+                        id: playerInfo.player.info.id,
+                        scope: 'best',
+                        limit: 100,
+                        mode: 2
+                    }
+                    }).catch(err => message.reply("Could not find best plays. Maybe you don't have any best play."));
+    
+                if (!bestInfo.scores.length || bestInfo.scores.length == 0) return message.reply("Could not find best plays. Maybe you dont have any best play.");
+                
+                const search = searchparameters.search;
+                var searchInfo = [];
+                searchInfo.scores = [];
+
+                for (var i = 0; i < bestInfo.scores.length; i++) {
+                    if (bestInfo.scores[i].beatmap.title.toLowerCase().includes(search.toLowerCase())  
+                        || bestInfo.scores[i].beatmap.artist.toLowerCase().includes(search.toLowerCase()) 
+                        || bestInfo.scores[i].beatmap.creator.toLowerCase().includes(search.toLowerCase())) {
+                        bestInfo.scores[i].id = i+1;
+                        searchInfo.scores.push(bestInfo.scores[i]);
+                    }
+                }
+
+                if(searchInfo.scores.length == 0 || searchInfo.scores.length < 1) {
+                    return message.reply("Could not find any play with the search \`" + search + "\`.")
+                };
+
+                bestInfo = searchInfo;
+
+                let description = "";
+                let data = [];
+
+                for (let i = 0; i < bestInfo.scores.length; i++) {
+                    const { data: modsFixed } = await banchoApi().get('get_beatmaps', {
+                        params: {
+                            k: botConfig.apikey,
+                            b: bestInfo.scores[i].beatmap.id,
+                            mods: modReplace(bestInfo.scores[i].mods)
+                        }
+                    });
+                    if (i % 5 == 0 && i != 0) {
+                        data.push(description);
+                        description = "";
+                        description += `${bestInfo.scores[i].id}. ${stars(modsFixed[0].difficultyrating, bestInfo.scores[i].beatmap.mode)} **[${bestInfo.scores[i].beatmap.title}](https://osu.ppy.sh/b/${bestInfo.scores[i].beatmap.id})** (${Number((parseFloat(modsFixed[0].difficultyrating)).toFixed(2))}★) \`${modsEnum({mod: bestInfo.scores[i].mods}).mod_text}\` • ${scoreFormat(bestInfo.scores[i].score)}\n${ranks(bestInfo.scores[i].grade)} *${bestInfo.scores[i].beatmap.version}* • **${Number((bestInfo.scores[i].pp).toFixed(2))}pp** • x${bestInfo.scores[i].max_combo}/${bestInfo.scores[i].beatmap.max_combo}\n${Number((bestInfo.scores[i].acc).toFixed(2))}% \`[ ${bestInfo.scores[i].n300} • ${bestInfo.scores[i].n100} • ${bestInfo.scores[i].n50} • ${bestInfo.scores[i].nmiss} ]\`\n${timeAgo(bestInfo.scores[i].play_time)}\n\n`;
+                    } else {
+                        description += `${bestInfo.scores[i].id}. ${stars(modsFixed[0].difficultyrating, bestInfo.scores[i].beatmap.mode)} **[${bestInfo.scores[i].beatmap.title}](https://osu.ppy.sh/b/${bestInfo.scores[i].beatmap.id})** (${Number((parseFloat(modsFixed[0].difficultyrating)).toFixed(2))}★) \`${modsEnum({mod: bestInfo.scores[i].mods}).mod_text}\` • ${scoreFormat(bestInfo.scores[i].score)}\n${ranks(bestInfo.scores[i].grade)} *${bestInfo.scores[i].beatmap.version}* • **${Number((bestInfo.scores[i].pp).toFixed(2))}pp** • x${bestInfo.scores[i].max_combo}/${bestInfo.scores[i].beatmap.max_combo}\n${Number((bestInfo.scores[i].acc).toFixed(2))}% \`[ ${bestInfo.scores[i].n300} • ${bestInfo.scores[i].n100} • ${bestInfo.scores[i].n50} • ${bestInfo.scores[i].nmiss} ]\`\n${timeAgo(bestInfo.scores[i].play_time)}\n\n`;
+                    }
+                }
+    
+                if (description !== "") {
+                    data.push(description);
+                }
+    
+                if(data.length > 1) {
+                    const embeds = data.map((x) => {
+                        return new MessageEmbed()
+                            .setAuthor({ name: `${bestInfo.scores.length} osu!Taiko plays for ${playerInfo.player.info.name} matching "${search}"`, iconURL: `${botConfig.server.avatarurl}${playerInfo.player.info.id}?${Math.floor(Math.random()*9999)}` })
+                            .setColor("#0099ff")
+                            .setDescription(x)
+                            .setThumbnail(`${botConfig.server.avatarurl}${playerInfo.player.info.id}?${Math.floor(Math.random()*9999)}`);
+                    })
+    
+                    await new Pagination(message, embeds, `Page`).paginate()
+
+                } else {
+                    const embed = new MessageEmbed({
+                        color: '#0099ff',
+                        author: {
+                            name: `${bestInfo.scores.length} osu!Taiko plays for ${playerInfo.player.info.name} matching "${search}"`,
+                            icon_url: `${botConfig.server.avatarurl}${playerInfo.player.info.id}?${Math.floor(Math.random()*9999)}`
+                        },
+                        description: description,
+                        thumbnail: {
+                            url: `${botConfig.server.avatarurl}${playerInfo.player.info.id}?${Math.floor(Math.random()*9999)}`
+                        }
+                    })
+        
+                    return message.reply({embeds: [embed]});
+                }
+                
+            } else if (searchparameters.contains == true && searchparameters.hasUser == false) {
+                const userID = message.author.id;
+                const userSchema = await osuUser.findOne({
+                    userID
+                })
+
+                if (!userSchema) return message.reply(`You have not linked your osu account. Use \`${botConfig.prefix}link <username>\` to link your account.`);
+
+                const { data: playerInfo } = await osuApi().get('get_player_info', {
+                    params: {
+                        name: userSchema.username,
+                        scope: 'all'
+                    }
+                    }).catch(err => message.reply(`Could not find user \`${username}\`, check your spelling.`));
+                    
+                    if(playerInfo == undefined || playerInfo.length == 0) return;
+
+                var { data: bestInfo } = await osuApi().get('get_player_scores', {
+                    params: {
+                        id: playerInfo.player.info.id,
+                        scope: 'best',
+                        limit: 100,
+                        mode: 2
+                    }
+                    }).catch(err => message.reply("Could not find best plays. Maybe you don't have any best play."));
+    
+                if (!bestInfo.scores.length || bestInfo.scores.length == 0) return message.reply("Could not find best plays. Maybe you dont have any best play.");
+                
+                const search = searchparameters.search;
+                var searchInfo = [];
+                searchInfo.scores = [];
+
+                for (var i = 0; i < bestInfo.scores.length; i++) {
+                    if (bestInfo.scores[i].beatmap.title.toLowerCase().includes(search.toLowerCase())  
+                        || bestInfo.scores[i].beatmap.artist.toLowerCase().includes(search.toLowerCase()) 
+                        || bestInfo.scores[i].beatmap.creator.toLowerCase().includes(search.toLowerCase())) {
+                        bestInfo.scores[i].id = i+1;
+                        searchInfo.scores.push(bestInfo.scores[i]);
+                    }
+                }
+
+                if(searchInfo.scores.length == 0 || searchInfo.scores.length < 1) {
+                    return message.reply("Could not find any play with the search \`" + search + "\`.")
+                };
+
+                bestInfo = searchInfo;
+
+                let description = "";
+                let data = [];
+
+                for (let i = 0; i < bestInfo.scores.length; i++) {
+                    const { data: modsFixed } = await banchoApi().get('get_beatmaps', {
+                        params: {
+                            k: botConfig.apikey,
+                            b: bestInfo.scores[i].beatmap.id,
+                            mods: modReplace(bestInfo.scores[i].mods)
+                        }
+                    });
+                    if (i % 5 == 0 && i != 0) {
+                        data.push(description);
+                        description = "";
+                        description += `${bestInfo.scores[i].id}. ${stars(modsFixed[0].difficultyrating, bestInfo.scores[i].beatmap.mode)} **[${bestInfo.scores[i].beatmap.title}](https://osu.ppy.sh/b/${bestInfo.scores[i].beatmap.id})** (${Number((parseFloat(modsFixed[0].difficultyrating)).toFixed(2))}★) \`${modsEnum({mod: bestInfo.scores[i].mods}).mod_text}\` • ${scoreFormat(bestInfo.scores[i].score)}\n${ranks(bestInfo.scores[i].grade)} *${bestInfo.scores[i].beatmap.version}* • **${Number((bestInfo.scores[i].pp).toFixed(2))}pp** • x${bestInfo.scores[i].max_combo}/${bestInfo.scores[i].beatmap.max_combo}\n${Number((bestInfo.scores[i].acc).toFixed(2))}% \`[ ${bestInfo.scores[i].n300} • ${bestInfo.scores[i].n100} • ${bestInfo.scores[i].n50} • ${bestInfo.scores[i].nmiss} ]\`\n${timeAgo(bestInfo.scores[i].play_time)}\n\n`;
+                    } else {
+                        description += `${bestInfo.scores[i].id}. ${stars(modsFixed[0].difficultyrating, bestInfo.scores[i].beatmap.mode)} **[${bestInfo.scores[i].beatmap.title}](https://osu.ppy.sh/b/${bestInfo.scores[i].beatmap.id})** (${Number((parseFloat(modsFixed[0].difficultyrating)).toFixed(2))}★) \`${modsEnum({mod: bestInfo.scores[i].mods}).mod_text}\` • ${scoreFormat(bestInfo.scores[i].score)}\n${ranks(bestInfo.scores[i].grade)} *${bestInfo.scores[i].beatmap.version}* • **${Number((bestInfo.scores[i].pp).toFixed(2))}pp** • x${bestInfo.scores[i].max_combo}/${bestInfo.scores[i].beatmap.max_combo}\n${Number((bestInfo.scores[i].acc).toFixed(2))}% \`[ ${bestInfo.scores[i].n300} • ${bestInfo.scores[i].n100} • ${bestInfo.scores[i].n50} • ${bestInfo.scores[i].nmiss} ]\`\n${timeAgo(bestInfo.scores[i].play_time)}\n\n`;
+                    }
+                }
+    
+                if (description !== "") {
+                    data.push(description);
+                }
+    
+                if(data.length > 1) {
+                    const embeds = data.map((x) => {
+                        return new MessageEmbed()
+                            .setAuthor({ name: `${bestInfo.scores.length} osu!Catch plays for ${playerInfo.player.info.name} matching "${search}"`, iconURL: `${botConfig.server.avatarurl}${playerInfo.player.info.id}?${Math.floor(Math.random()*9999)}` })
+                            .setColor("#0099ff")
+                            .setDescription(x)
+                            .setThumbnail(`${botConfig.server.avatarurl}${playerInfo.player.info.id}?${Math.floor(Math.random()*9999)}`);
+                    })
+    
+                    await new Pagination(message, embeds, `Page`).paginate()
+
+                } else {
+                    const embed = new MessageEmbed({
+                        color: '#0099ff',
+                        author: {
+                            name: `${bestInfo.scores.length} osu!Catch plays for ${playerInfo.player.info.name} matching "${search}"`,
+                            icon_url: `${botConfig.server.avatarurl}${playerInfo.player.info.id}?${Math.floor(Math.random()*9999)}`
+                        },
+                        description: description,
+                        thumbnail: {
+                            url: `${botConfig.server.avatarurl}${playerInfo.player.info.id}?${Math.floor(Math.random()*9999)}`
+                        }
+                    })
+        
+                    return message.reply({embeds: [embed]});
+                }
             } else {
+
                 let username = args.join(' ').replace(/ /g, "_");
                 const { data: playerInfo } = await osuApi().get('get_player_info', {
                     params: {
@@ -497,6 +689,10 @@ module.exports = {
                 if (!bestInfo.scores.length || bestInfo.scores.length == 0) return message.reply("Could not find best plays. Maybe you dont have any best play.");
                 
                 let description = "";
+
+                for(let i = 0; i < bestInfo.scores.length; i++) {
+                    bestInfo.scores[i].id = i+1;
+                }
     
                 for (let i = 0; i < bestInfo.scores.length; i++) {
                     const { data: modsFixed } = await banchoApi().get('get_beatmaps', {

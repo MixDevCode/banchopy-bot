@@ -18,6 +18,21 @@ module.exports = (args, parameter) => {
         } else {
             return {contains: false, args: args.join('_')};
         }
+    } else if (parameter == "-?"){
+        if (args.includes(parameter)) {
+            let index = args.indexOf(parameter);
+            args.splice(index, 1);
+            let searchval = args.join(' ').match(/(?:"[^"]*"|^[^"]*$)/)[0]
+            .replace(/"/g, "");
+            let searchval2 = args.join('_').match(/(?:"[^"]*"|^[^"]*$)/)[0]
+            if (hasUser(args.join('_').replace(searchval2, ''))) {
+                return {contains: true, args: args.join('_').replace(searchval2, '').slice(0, -1), hasUser: true, search: searchval};
+            } else {
+                return {contains: true, hasUser: false, search: searchval};
+            }
+        } else {
+            return {contains: false, args: args.join('_')};
+        }
     } else {
         if (args.includes(parameter)) {
             let index = args.indexOf(parameter);

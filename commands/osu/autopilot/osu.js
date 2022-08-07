@@ -58,11 +58,11 @@ module.exports = {
                 description: `**osu!Autopilot status for: [${playerInfo.player.info.name}](${botConfig.server.domainurl}u/${playerInfo.player.info.id})**`,
                 fields: [{
                     name: 'Performance',
-                    value: `--- **${playerInfo.player.stats[7].pp}pp**\n**Global Rank** #${playerInfo.player.stats[7].rank} (:flag_${playerInfo.player.info.country}: #${playerInfo.player.stats[7].country_rank})\n**Accuracy:** ${Number((playerInfo.player.stats[7].acc).toFixed(2))}%\n**Playcount:** ${playerInfo.player.stats[7].plays}\n**Level:** ${level(playerInfo.player.stats[7].rscore)}`,
+                    value: `--- **${playerInfo.player.stats[8].pp}pp**\n**Global Rank** #${playerInfo.player.stats[8].rank} (:flag_${playerInfo.player.info.country}: #${playerInfo.player.stats[8].country_rank})\n**Accuracy:** ${Number((playerInfo.player.stats[8].acc).toFixed(2))}%\n**Playcount:** ${playerInfo.player.stats[8].plays}\n**Level:** ${level(playerInfo.player.stats[8].rscore)}`,
                     inline: true
                 }, {
                     name: 'Rank',
-                    value: `${ranks("SSH")}: ${playerInfo.player.stats[7].xh_count}\n${ranks("SS")}: ${playerInfo.player.stats[7].x_count}\n${ranks("SH")}: ${playerInfo.player.stats[7].sh_count}\n${ranks("S")}: ${playerInfo.player.stats[7].s_count}\n${ranks("A")}: ${playerInfo.player.stats[7].a_count}`, 
+                    value: `${ranks("SSH")}: ${playerInfo.player.stats[8].xh_count}\n${ranks("SS")}: ${playerInfo.player.stats[8].x_count}\n${ranks("SH")}: ${playerInfo.player.stats[8].sh_count}\n${ranks("S")}: ${playerInfo.player.stats[8].s_count}\n${ranks("A")}: ${playerInfo.player.stats[8].a_count}`, 
                     inline: true
                 }],
                 footer: {
@@ -109,11 +109,11 @@ module.exports = {
                 description: `**osu!Autopilot status for: [${playerInfo.player.info.name}](${botConfig.server.domainurl}u/${playerInfo.player.info.id})**`,
                 fields: [{
                     name: 'Performance',
-                    value: `--- **${playerInfo.player.stats[7].pp}pp**\n**Global Rank** #${playerInfo.player.stats[7].rank} (:flag_${playerInfo.player.info.country}: #${playerInfo.player.stats[7].country_rank})\n**Accuracy:** ${Number((playerInfo.player.stats[7].acc).toFixed(2))}%\n**Playcount:** ${playerInfo.player.stats[7].plays}\n**Level:** ${level(playerInfo.player.stats[7].rscore)}`,
+                    value: `--- **${playerInfo.player.stats[8].pp}pp**\n**Global Rank** #${playerInfo.player.stats[8].rank} (:flag_${playerInfo.player.info.country}: #${playerInfo.player.stats[8].country_rank})\n**Accuracy:** ${Number((playerInfo.player.stats[8].acc).toFixed(2))}%\n**Playcount:** ${playerInfo.player.stats[8].plays}\n**Level:** ${level(playerInfo.player.stats[8].rscore)}`,
                     inline: true
                 }, {
                     name: 'Rank',
-                    value: `${ranks("SSH")}: ${playerInfo.player.stats[7].xh_count}\n${ranks("SS")}: ${playerInfo.player.stats[7].x_count}\n${ranks("SH")}: ${playerInfo.player.stats[7].sh_count}\n${ranks("S")}: ${playerInfo.player.stats[7].s_count}\n${ranks("A")}: ${playerInfo.player.stats[7].a_count}`, 
+                    value: `${ranks("SSH")}: ${playerInfo.player.stats[8].xh_count}\n${ranks("SS")}: ${playerInfo.player.stats[8].x_count}\n${ranks("SH")}: ${playerInfo.player.stats[8].sh_count}\n${ranks("S")}: ${playerInfo.player.stats[8].s_count}\n${ranks("A")}: ${playerInfo.player.stats[8].a_count}`, 
                     inline: true
                 }],
                 footer: {
